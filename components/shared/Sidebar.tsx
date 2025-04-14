@@ -1,6 +1,6 @@
 import Link from "next/link";
 import React from "react";
-import { SignedIn, SignIn, UserButton } from "@clerk/nextjs";
+import { SignedIn, UserButton } from "@clerk/nextjs";
 import {
   Home,
   Camera,
