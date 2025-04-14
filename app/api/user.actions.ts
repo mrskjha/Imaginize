@@ -1,8 +1,8 @@
 'use server'
-
-import { User } from '@clerk/nextjs/server'
 import { CreateUserParams, CreateUserSchema } from '../../type'
 import { prisma } from '@/lib/prismaClient'
+import type { User } from '@prisma/client'
+
 
 
 // Common result type
@@ -21,10 +21,24 @@ export default async function createUser(user: CreateUserParams): Promise<ApiRes
   try {
     const validated = CreateUserSchema.parse(user)
 
-    const newUser = await prisma.user.create({
-      data: validated,
-    })
-
+      const newUser = await prisma.user.create({
+        data: {
+          clerkId: validated.clerkId,
+          email: validated.email,
+          username: validated.username,
+          firstName: validated.firstName,
+          lastName: validated.lastName ?? null,
+          photo: validated.photo ?? null,
+          creditBalance: 0,         // required field
+          planId: null,             // optional, set null or a value
+        },
+      })
+    if (!newUser) {
+      return {
+        success: false,
+        message: 'User creation failed',
+      }
+    }
     return {
       success: true,
       message: 'User created successfully',
@@ -73,7 +87,7 @@ export async function getUserById(id: string): Promise<ApiResponse<User>> {
 
     return {
       success: true,
-      user: user ?? undefined,
+      message: user ? 'User found' : 'User not found',
     }
   } catch (error) {
     console.error('error', error)
