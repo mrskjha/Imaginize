@@ -2,7 +2,7 @@
 
 import { User } from '@clerk/nextjs/server'
 import { CreateUserParams, CreateUserSchema } from '../../type'
-import prisma from '@/lib/prisma'
+import { prisma } from '@/lib/prismaClient'
 
 
 // Common result type
