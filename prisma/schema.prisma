@@ -51,7 +51,7 @@ model User {
   firstName     String
   lastName      String?
   planId        String?
-  creditBalance Int
+  creditBalance Int?
   transactions  Transaction[]
 }
 
@@ -60,7 +60,7 @@ model Transaction {
   createdAt DateTime @default(now())
   stripeId  String   @unique
   amount    Int
-  plan      String
+  plan      String?
   credits   Int
   buyerId   String
   buyer     User     @relation(fields: [buyerId], references: [clerkId])

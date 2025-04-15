@@ -1,18 +1,17 @@
 'use server'
+
 import { CreateUserParams, CreateUserSchema } from '../../type'
 import { prisma } from '@/lib/prismaClient'
 import type { User } from '@prisma/client'
 
-
-
 // Common result type
 type ApiResponse<T> = {
+  _id?: any
   success: boolean
   message?: string
   user?: T
   users?: T[]
 }
-
 
 // --------------------
 // Create User
@@ -21,24 +20,17 @@ export default async function createUser(user: CreateUserParams): Promise<ApiRes
   try {
     const validated = CreateUserSchema.parse(user)
 
-      const newUser = await prisma.user.create({
-        data: {
-          clerkId: validated.clerkId,
-          email: validated.email,
-          username: validated.username,
-          firstName: validated.firstName,
-          lastName: validated.lastName ?? null,
-          photo: validated.photo ?? null,
-          creditBalance: 0,         // required field
-          planId: null,             // optional, set null or a value
-        },
-      })
-    if (!newUser) {
-      return {
-        success: false,
-        message: 'User creation failed',
-      }
-    }
+    const newUser = await prisma.user.create({
+      data: {
+        clerkId: validated.clerkId,
+        email: validated.email,
+        username: validated.username,
+        firstName: validated.firstName,
+        lastName: validated.lastName ?? null,
+        photo: validated.photo ?? null,
+      },
+    })
+
     return {
       success: true,
       message: 'User created successfully',
@@ -52,7 +44,6 @@ export default async function createUser(user: CreateUserParams): Promise<ApiRes
     }
   }
 }
-
 
 // --------------------
 // Get All Users
@@ -73,7 +64,6 @@ export async function getUsers(): Promise<ApiResponse<User>> {
   }
 }
 
-
 // --------------------
 // Get User By Clerk ID
 // --------------------
@@ -85,9 +75,17 @@ export async function getUserById(id: string): Promise<ApiResponse<User>> {
       },
     })
 
+    if (!user) {
+      return {
+        success: false,
+        message: 'User not found',
+      }
+    }
+
     return {
       success: true,
-      message: user ? 'User found' : 'User not found',
+      message: 'User found',
+      user,
     }
   } catch (error) {
     console.error('error', error)
@@ -97,7 +95,6 @@ export async function getUserById(id: string): Promise<ApiResponse<User>> {
     }
   }
 }
-
 
 // --------------------
 // Delete User
