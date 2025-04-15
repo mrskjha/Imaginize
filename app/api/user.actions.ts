@@ -6,7 +6,7 @@ import type { User } from '@prisma/client'
 
 // Common result type
 type ApiResponse<T> = {
-  _id?: any
+  _id?: string
   success: boolean
   message?: string
   user?: T
