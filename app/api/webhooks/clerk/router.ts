@@ -5,8 +5,8 @@ import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { Webhook } from "svix";
 
-import createUser,{ deleteUser } from "../../user.actions";
-import { CreateUserParams } from "../../../../type";
+import createUser,{ CreateUserParams, deleteUser } from "../../user.actions";
+// import { CreateUserParams } from "../../../../type";
 
 export async function POST(req: Request) {
   // You can find this in the Clerk Dashboard -> Webhooks -> choose the webhook
@@ -66,18 +66,18 @@ export async function POST(req: Request) {
         email: email_addresses[0].email_address,
         username: username!,
         firstName: first_name!,
-        lastName: last_name,
+        lastName: last_name!,
         photo: image_url,
     };
 
     // Create user in the database
     const newUser = await createUser(user);
 
-    // Set public metadata
-    if (newUser) {
+    // Ensure newUser has the expected structure
+    if (newUser && typeof newUser === "object" && "_id" in newUser) {
       await clerkClient.users.updateUserMetadata(id, {
         publicMetadata: {
-          userId: newUser._id,
+          userId: (newUser as { _id: string })._id,
         },
       });
     }

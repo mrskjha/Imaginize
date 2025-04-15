@@ -1,8 +1,9 @@
 'use server'
 
-import { CreateUserParams, CreateUserSchema } from '../../type'
+
 import { prisma } from '@/lib/prismaClient'
 import type { User } from '@prisma/client'
+
 
 // Common result type
 type ApiResponse<T> = {
@@ -13,36 +14,45 @@ type ApiResponse<T> = {
   users?: T[]
 }
 
+export type CreateUserParams = {
+  clerkId: string
+  email: string
+  username: string
+  firstName: string
+  lastName: string
+  photo: string
+}
+
 // --------------------
 // Create User
 // --------------------
-export default async function createUser(user: CreateUserParams): Promise<ApiResponse<User>> {
-  try {
-    const validated = CreateUserSchema.parse(user)
-
-    const newUser = await prisma.user.create({
-      data: {
-        clerkId: validated.clerkId,
-        email: validated.email,
-        username: validated.username,
-        firstName: validated.firstName,
-        lastName: validated.lastName ?? null,
-        photo: validated.photo ?? null,
-      },
-    })
-
-    return {
-      success: true,
-      message: 'User created successfully',
-      user: newUser,
-    }
-  } catch (error) {
-    console.error('error', error)
-    return {
-      success: false,
-      message: error instanceof Error ? error.message : 'Something went wrong',
-    }
+export default async function createUser(user: CreateUserParams){
+  const data  = {
+    clerkId: 'clerkId',
+    email: 'email',
+    username: 'username',
+    firstName: 'firstName',
+    lastName: 'lastName',
+    photo: 'photo',
   }
+
+  const newUser =await prisma.user.create({
+    data: {
+      clerkId: data.clerkId,
+      email: data.email,
+      username: data.username,
+      photo: data.photo,
+    },
+  })
+  if (!newUser) {
+    return new Response('User not created', {
+      status: 500,
+    })
+  }
+  return new Response(JSON.stringify(newUser), {
+    status: 200,
+  })
+
 }
 
 // --------------------
@@ -51,8 +61,16 @@ export default async function createUser(user: CreateUserParams): Promise<ApiRes
 export async function getUsers(): Promise<ApiResponse<User>> {
   try {
     const users = await prisma.user.findMany()
+    if (!users || users.length === 0) {
+      return {
+        success: false,
+        message: 'No users found',
+        users: [],
+      }
+    }
     return {
       success: true,
+      message: 'Users retrieved successfully',
       users,
     }
   } catch (error) {
